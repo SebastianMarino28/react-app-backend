@@ -1,7 +1,13 @@
 const express = require('express');
 const app = express();
 const port = 5000;
+const cors = require('cors');
+var randomId = require('random-id');
+const { response } = require('express');
+var len = 6;
+var pattern = 'a0';
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -105,8 +111,10 @@ function findUserById(id) {
 
 app.post('/users', (req, res) => {
    const userToAdd = req.body;
+   var id = randomId(len, pattern);
+   userToAdd.id = id;
    addUser(userToAdd);
-   res.status(200).end();
+   res.status(201).send(userToAdd).end();
 });
 
 function addUser(user){
@@ -115,10 +123,15 @@ function addUser(user){
 
 app.delete('/users/:id', (req, res) =>{
    const id = req.params['id'];
-   deleteUser(id);
-   res.status(200).end();
+   let result = findUserById(id);
+   if (result === undefined || result.length == 0)
+       res.status(404).send('Resource not found.');
+   else {
+      deleteUser(id);
+      res.status(204).end();
+   }
 });
 
 function deleteUser(userId){
-   users['users_list'] = users['users_list'].filter(user => user != users['users_list'].find( (user) => user['id'] === userId));
+   return users['users_list'] = users['users_list'].filter(user => user != users['users_list'].find( (user) => user['id'] === userId));
 }
